@@ -18,16 +18,19 @@ encoding = 'utf-8'
 key = bytes(secrets.master_password, encoding)
 
 
-
 def main():
+    vfs = mount_sd()
+    encrypt(read_csv(path_from), path_to)
+    storage.umount(vfs)
+
+def mount_sd():
     # Connect to the card and mount the filesystem.
     spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
     cs = digitalio.DigitalInOut(board.D7)
     sdcard = adafruit_sdcard.SDCard(spi, cs)
     vfs = storage.VfsFat(sdcard)
     storage.mount(vfs, "/sd")
-    encrypt(read_csv(path_from), path_to)
-    storage.umount(vfs)
+    return vfs
 
 def read_csv(path):
     data = {}
