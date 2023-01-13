@@ -11,10 +11,10 @@ import storage
 import struct
 import sys
 
-path_from = 'test.bin'
+path_from = '/sd/encrypted.bin'
 v1_fmt_str = '15sx20sx50s'
-key = bytes(secrets.master_password, 'utf-8')
 encoding = 'utf-8'
+key = bytes(secrets.master_password, encoding)
 nul = b'\x00'
 
 
@@ -50,6 +50,7 @@ def load_bytes(path):
 def decrypyt_bytes(byte_arr):
     outp = bytearray(len(byte_arr))
     decipher = aesio.AES(key, aesio.MODE_CTR)
+    decipher.decrypt_into(byte_arr, outp)
     return outp.decode()
 
 

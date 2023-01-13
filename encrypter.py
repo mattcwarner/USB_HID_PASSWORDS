@@ -14,8 +14,9 @@ import sys
 path_from = 'passwords.csv'
 path_to = '/sd/encrypted.bin'
 v1_fmt_str = '15sx20sx50s'
-key = bytes(secrets.master_password, 'utf-8')
 encoding = 'utf-8'
+key = bytes(secrets.master_password, encoding)
+
 
 
 def main():
@@ -42,12 +43,13 @@ def encrypt(data, path):
             entry = bytes(entry, encoding)
             username = bytes(username, encoding)
             password = bytes(password, encoding)
-            encrypted_password = bytearray(len(password))
+            encrypted = bytearray(len(password))
             cipher = aesio.AES(key, aesio.MODE_CTR)
-            cipher.encrypt_into(password, encrypted_password)
-            bin = struct.pack(v1_fmt_str, entry, username, encrypted_password)
-            f.write(bin)
-            print(bin)
+            cipher.encrypt_into(password, encrypted)
+            hexlify(encrypted)
+            stream = struct.pack(v1_fmt_str, entry, username, encrypted)
+            f.write(bytes(stream))
+            print(stream)
 
 if __name__ == "__main__":
     main()
