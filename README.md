@@ -12,3 +12,13 @@ The first iteration of the password manager involves:
     firstly it allows selection of a password on the oled using push button A to cycle through entries
     push button B causes decryption of corresponding password and entry into selected field on device
   
+  
+ Current structure:
+  circuitpython on rp2040:
+    lib/
+      secrets.py has a bytestring of 16bytes
+      decrypter.py has all the helper funtions
+    / 
+      code.py has the main script
+    /sd/
+      passwords.csv file must be added before first use
