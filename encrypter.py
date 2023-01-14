@@ -10,9 +10,9 @@ import secrets
 import storage
 import struct
 import sys
-# from secure_delete import secure_delete
 
-path_from = 'passwords.csv'
+
+path_from = '/sd/passwords.csv'
 path_to = '/sd/encrypted.bin'
 v1_fmt_str = '15sx20sx50s'
 encoding = 'utf-8'
@@ -22,8 +22,17 @@ key = bytes(secrets.master_password, encoding)
 def main():
     vfs = mount_sd()
     encrypt(read_csv(path_from), path_to)
-    # secure_delete(path_from)
+    secure_delete(path_from)
     storage.umount(vfs)
+
+def secure_delete(path, passes=1):
+    with open(path, "ba+") as delfile:
+        length = delfile.tell()
+    with open(path, "br+") as delfile:
+        for i in range(passes):
+            delfile.seek(0)
+            delfile.write(os.urandom(length))
+    os.remove(path)
 
 def mount_sd():
     # Connect to the card and mount the filesystem.
@@ -36,9 +45,13 @@ def mount_sd():
 
 def read_csv(path):
     data = {}
-    with open(path, "r") as f:
-        for line in csv.DictReader(f):
-            data[line["Title"]] = line["Username"], line["Password"]
+    try:
+        with open(path, "r") as f:
+            for line in csv.DictReader(f):
+                data[line["Title"]] = line["Username"], line["Password"]
+    except OSError:
+        print("No passwords.csv file on sd card")
+        sys.exit(1)
     return data
 
 def encrypt(data, path):
