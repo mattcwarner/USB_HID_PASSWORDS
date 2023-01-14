@@ -11,7 +11,6 @@ import circuitpython_csv as csv
 from decrypter import load_bytes, decrypt_bytes
 import digitalio
 import displayio
-# import encrypter
 import os
 import secrets
 import storage
@@ -30,10 +29,6 @@ nul = b'\x00'
 
 def main():
     vfs = mount_sd()
-    # if not os.is_file(path_encrypted):
-        # encrypter(path_encrypted, path_csv)
-        # if not os.is_file(path_csv): raise OSError('error message')
-
     display = display_config()
     splash = draw_display(display)
     keyb = hid_config()
