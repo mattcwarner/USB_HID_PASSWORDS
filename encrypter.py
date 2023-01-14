@@ -10,6 +10,7 @@ import secrets
 import storage
 import struct
 import sys
+# from secure_delete import secure_delete
 
 path_from = 'passwords.csv'
 path_to = '/sd/encrypted.bin'
@@ -21,6 +22,7 @@ key = bytes(secrets.master_password, encoding)
 def main():
     vfs = mount_sd()
     encrypt(read_csv(path_from), path_to)
+    # secure_delete(path_from)
     storage.umount(vfs)
 
 def mount_sd():

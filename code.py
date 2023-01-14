@@ -11,6 +11,7 @@ import circuitpython_csv as csv
 from decrypter import load_bytes, decrypt_bytes
 import digitalio
 import displayio
+# import encrypter
 import os
 import secrets
 import storage
@@ -20,7 +21,7 @@ import terminalio
 import time
 import usb_hid
 
-path_from = '/sd/encrypted.bin'
+path_encrypted = '/sd/encrypted.bin'
 v1_fmt_str = '15sx20sx50s'
 encoding = 'utf-8'
 key = bytes(secrets.master_password, encoding)
@@ -29,12 +30,16 @@ nul = b'\x00'
 
 def main():
     vfs = mount_sd()
+    # if not os.is_file(path_encrypted):
+        # encrypter(path_encrypted, path_csv)
+        # if not os.is_file(path_csv): raise OSError('error message')
+
     display = display_config()
     splash = draw_display(display)
     keyb = hid_config()
     change = btn_config('A')
     paste = btn_config('B')
-    data = load_bytes(path_from)
+    data = load_bytes(path_encrypted)
     current_entry = 0
     while True:
         if not change.value:
@@ -42,15 +47,9 @@ def main():
                 current_entry = 0
             else:
                 current_entry += 1
-
-            line_1_text = data[current_entry]['e']
-            line_1 = label.Label(terminalio.FONT, text=line_1_text, color=0xFFFF00, x=2, y=20)
-            splash[-2] = line_1
-
-            line_2_text = data[current_entry]['u']
-            line_2 = label.Label(terminalio.FONT, text=line_2_text, color=0xFFFF00, x=2, y=40)
-            splash[-1] = line_2
-
+            write_line(data[current_entry]['e'], 1, splash)
+            write_line(data[current_entry]['u'], 2, splash)
+            write_line("*"*len(data[current_entry]['p']), 3, splash)
             time.sleep(0.5)
         else:
             pass
@@ -83,32 +82,20 @@ def display_config():
 def draw_display(display):
     splash = displayio.Group() # no max_size needed
     display.show(splash)
-
-    """color_bitmap = displayio.Bitmap(128, 64, 1) # Full screen white
-    color_palette = displayio.Palette(1)
-    color_palette[0] = 0xFFFFFF  # White
-    bg_sprite = displayio.TileGrid(color_bitmap, pixel_shader=color_palette, x=0, y=0)
-    splash.append(bg_sprite
-    # Draw a smaller inner rectangle
-    inner_bitmap = displayio.Bitmap(118, 54, 1)
-    inner_palette = displayio.Palette(1)
-    inner_palette[0] = 0x000000  # Black
-    inner_sprite = displayio.TileGrid(inner_bitmap, pixel_shader=inner_palette, x=5, y=4)
-    splash.append(inner_sprite)"""
-    # Draw a label
-    title_text = "Passwords"
-    title_text_area = label.Label(terminalio.FONT, text=title_text, color=0xFFFF00, x=40, y=7)
-    splash.append(title_text_area)
-
-    line_1_text = "btn-A to cycle"
-    line_1 = label.Label(terminalio.FONT, text=line_1_text, color=0xFFFF00, x=2, y=20)
-    splash.append(line_1)
-
-    line_2_text = "btn-B to insert"
-    line_2 = label.Label(terminalio.FONT, text=line_2_text, color=0xFFFF00, x=2, y=40)
-    splash.append(line_2)
-
+    write_line("Passwords", 0, splash, init=1)
+    write_line("btn-A to cycle", 1, splash, init=1)
+    write_line("btn-B to insert", 2, splash, init=1)
+    write_line("passwords here", 3, splash, init=1)
     return splash
+
+def write_line(text, line, splash, init=0):
+    lines = {0:(40,7), 1:(2,20), 2:(2,38), 3:(2,53),}
+    x, y = lines[line]
+    lab = label.Label(terminalio.FONT, text=text, color=0xFFFF00, x=x, y=y)
+    if init:
+        splash.append(lab)
+    else:
+        splash[line] = lab # splash[-2] = label
 
 def btn_config(button):
     BUTTONS = {'A': board.D0, 'B': board.D1,}
@@ -117,7 +104,6 @@ def btn_config(button):
     return button_object
 
 def hid_config():
-    # Set up device as hid keyboard
     keyboard = Keyboard(usb_hid.devices)
     return KeyboardLayoutUS(keyboard)
 
