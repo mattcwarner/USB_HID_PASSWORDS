@@ -8,7 +8,7 @@ from binascii import hexlify
 import board
 import busio
 import circuitpython_csv as csv
-from decrypter import load_bytes, decrypt_bytes
+from helpers import load_bytes, decrypt_bytes, secure_delete
 import digitalio
 import displayio
 import os
@@ -21,19 +21,24 @@ import time
 import usb_hid
 
 path_encrypted = '/sd/encrypted.bin'
+path_csv = '/sd/passwords.csv'
+
 v1_fmt_str = '15sx20sx50s'
 encoding = 'utf-8'
 key = bytes(secrets.master_password, encoding)
 nul = b'\x00'
-
+INTERVAL = 0.3
+TIMEOUT = 100
 
 def main():
     vfs = mount_sd()
     display = display_config()
     splash = draw_display(display)
+
     keyb = hid_config()
     change = btn_config('A')
     paste = btn_config('B')
+    wipe = btn_config('D')
     data = load_bytes(path_encrypted)
     current_entry = 0
     while True:
@@ -45,16 +50,22 @@ def main():
             write_line(data[current_entry]['e'], 1, splash)
             write_line(data[current_entry]['u'], 2, splash)
             write_line("*"*len(data[current_entry]['p']), 3, splash)
-            time.sleep(0.5)
+            time.sleep(INTERVAL)
         else:
             pass
         if not paste.value:
             print("printing selected password", data[current_entry])
             d = decrypt_bytes(data[current_entry]['p'])
             keyb.write(d)
-            time.sleep(0.5)
+            time.sleep(INTERVAL)
         else:
             pass
+        if not wipe.value:
+            print(f'securely removing {path_encrypted}')
+            secure_delete(path_encrypted)
+            print(f'securely removing {path_csv}')
+            secure_delete(path_csv)
+            break
     storage.umount(vfs)
 
 
@@ -93,7 +104,7 @@ def write_line(text, line, splash, init=0):
         splash[line] = lab # splash[-2] = label
 
 def btn_config(button):
-    BUTTONS = {'A': board.D0, 'B': board.D1,}
+    BUTTONS = {'A': board.D0, 'B': board.D1, 'C': board.D2, 'D': board.D3, }
     button_object = digitalio.DigitalInOut(BUTTONS[button])
     button_object.switch_to_input(pull=digitalio.Pull.UP)
     return button_object
