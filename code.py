@@ -22,6 +22,7 @@ import usb_hid
 
 path_encrypted = '/sd/encrypted.bin'
 path_csv = '/sd/passwords.csv'
+path_secrets = '/lib/secrets.py'
 
 v1_fmt_str = '15sx20sx50s'
 encoding = 'utf-8'
@@ -36,13 +37,14 @@ def main():
     splash = draw_display(display)
 
     keyb = hid_config()
-    change = btn_config('A')
-    paste = btn_config('B')
+    forward = btn_config('A')
+    backward = btn_config('B')
+    paste = btn_config('C')
     wipe = btn_config('D')
     data = load_bytes(path_encrypted)
     current_entry = 0
     while True:
-        if not change.value:
+        if not forward.value:
             if current_entry == len(data) - 1:
                 current_entry = 0
             else:
@@ -51,23 +53,32 @@ def main():
             write_line(data[current_entry]['u'], 2, splash)
             write_line("*"*len(data[current_entry]['p']), 3, splash)
             time.sleep(INTERVAL)
-        else:
-            pass
+        if not backward.value:
+            if current_entry == 0:
+                current_entry = len(data) - 1
+            else:
+                current_entry -= 1
+            write_line(data[current_entry]['e'], 1, splash)
+            write_line(data[current_entry]['u'], 2, splash)
+            write_line("*"*len(data[current_entry]['p']), 3, splash)
+            time.sleep(INTERVAL)
         if not paste.value:
             print("printing selected password", data[current_entry])
             d = decrypt_bytes(data[current_entry]['p'])
             keyb.write(d)
             time.sleep(INTERVAL)
-        else:
-            pass
         if not wipe.value:
-            print(f'securely removing {path_encrypted}')
-            secure_delete(path_encrypted)
-            print(f'securely removing {path_csv}')
-            secure_delete(path_csv)
+            wipe_routine()
             break
     storage.umount(vfs)
 
+def wipe_routine():
+    print(f'securely removing {path_encrypted}')
+    secure_delete(path_encrypted)
+    print(f'securely removing {path_csv}')
+    secure_delete(path_csv)
+    print(f'securely removing {path_secrets}')
+    secure_delete(path_secrets)
 
 def mount_sd():
     # Connect to the card and mount the filesystem.
