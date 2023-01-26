@@ -1,9 +1,11 @@
 # USB_HID_PASSWORDS
-A project exploring the use of the rp2040 microcontroller as a password manager.
+#### Video Demo: https://youtu.be/lXtYAOPhjNA
+#### Description:
+Plug the manager into one of your devices with a USB-C cable, choose the password you want to enter on the manager and select the password field on the device. Hit the input button and watch as your impossible to remember password is magically typed for you!
 
-First iteration hardware is a seeed xiao rp2040 board, oled screen, sd card reader and 2 push buttons
+First iteration hardware is a seeed xiao rp2040 board, oled screen, sd card reader and 4 push buttons
 
-The first iteration of the password manager involves:
+#### The first iteration of the password manager involves:
   Taking an unencrypted .csv file including passwords and usernames as available from your professional password manager
   Running the encryption script to generate an encrypted binary file from the csv and a master key.
   Secure deletion of the plaintext csv
@@ -13,12 +15,11 @@ The first iteration of the password manager involves:
     push button B causes decryption of corresponding password and entry into selected field on device
   
   
- Current structure:
-  circuitpython on rp2040:
-    lib/
+#### Current structure:
+####    lib/
       secrets.py has a bytestring of 16bytes
       decrypter.py has all the helper funtions
-    / 
+####    / 
       code.py has the main script
-    /sd/
+####    /sd/
       passwords.csv file must be added before first use
