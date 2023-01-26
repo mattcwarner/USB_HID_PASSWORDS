@@ -17,9 +17,10 @@ First iteration hardware is a seeed xiao rp2040 board, oled screen, sd card read
   
 #### Current structure:
 ####    lib/
-      secrets.py has a bytestring of 16bytes
-      decrypter.py has all the helper funtions
+      secrets.py has a bytestring of 16 or 32 bytes which is the key for the encryption.
+      helpers.py has all the helper funtions for encryption, decryption and deletion.
 ####    / 
-      code.py has the main script
+      code.py has the main script.
 ####    /sd/
-      passwords.csv file must be added before first use
+      passwords.csv file must be added before first use preferably exported directly from your password manager.
+      encrypted.bin will automatically be created on first use if passwords.csv is found on your sd card.
